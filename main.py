@@ -30,7 +30,7 @@ ai_art_filter = 1
 seed = 'MaxHammer'
 # seed = '9uHASZ'
 
-
+formats = ['jpg', 'png']
 
 def get_random_wp(url,params,headers):
     s = requests.session()
@@ -41,27 +41,34 @@ def get_random_wp(url,params,headers):
     # https://th.wallhaven.cc/small/g7/g76657.jpg
     # https://w.wallhaven.cc/full/g7/wallhaven-g76657.jpg
     figures = soup.find_all('figure')
-    img_list = []
+    img_list = {}
     for figure in figures:
-        img_list.append(f"https://w.wallhaven.cc/full/"
-                        f"{figure.find('img').attrs['data-src'].split('/')[4]}"
-                        f"/wallhaven-{figure.find('img').attrs['data-src'].split('/')[5]}")
+        prefix = figure.find('img').attrs['data-src'].split('/')[4]
+        file_name = figure.find('img').attrs['data-src'].split('/')[-1].split('.')[0]
+        for f in formats:
+            img_list[prefix] = file_name
     i = 0
-    while True:
+    next = True
+    while next==True:
         random_num = randrange(0,len(img_list))
-        get_img = requests.get(img_list[random_num])
-        if get_img:
-            set_wp(get_img)
-            break
+        for f in formats:
+            if not next:
+                continue
+            get_img = requests.get(url=f"https://w.wallhaven.cc/full/{list(img_list)[random_num]}"
+                                    f"/wallhaven-{list(img_list.values())[random_num]}.{f}")
+            if get_img:
+                set_wp(get_img)
+                next = False
         i += 1
         if i == len(img_list):
-            break
+                next = False
 
 def set_wp(img):
+    f = img.url.split('/')[-1].split('.')[1]
     if os.name == 'posix':
-        WALLPAPER_PATH = os.environ['HOME'] + "/daily_image.jpg"
+        WALLPAPER_PATH = os.environ['HOME'] + "/daily_image." + f
     else:
-        WALLPAPER_PATH = os.environ['HOMEDRIVE'] + os.environ['HOMEPATH'] + "\daily_image.jpg"
+        WALLPAPER_PATH = os.environ['HOMEDRIVE'] + os.environ['HOMEPATH'] + "\daily_image." + f
     print(f'Get wallpaper from: {img.url}')
     f = open(WALLPAPER_PATH,'wb')
     f.write(img.content) 
