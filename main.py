@@ -1,8 +1,11 @@
 import requests
 import os
+import sys
 import ctypes
-from random import randrange
+from random import randrange, Random
 from bs4 import BeautifulSoup as bs
+
+
 
 
 # текстовый запрос
@@ -27,7 +30,9 @@ colors = ''
 # Сожанные AI = 1, 0 для отключения фильтра
 ai_art_filter = 1
 
-seed = 'MaxHammer'
+seed = randrange(sys.maxsize)
+rng = Random(seed)
+print("Seed was:", seed)
 # seed = '9uHASZ'
 
 formats = ['jpg', 'png']
